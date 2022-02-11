@@ -1,4 +1,5 @@
 import "phaser";
+import { Scene } from "phaser";
 
 import { PhaserNavMeshPlugin } from "phaser-navmesh";
 import { NavMashPluginMod } from "..";
@@ -45,6 +46,7 @@ export class GameScene extends Phaser.Scene {
       { frameWidth: 50, frameHeight: 90 });
     this.load.image('hotelLobby', 'assets/hotellobby.png');
     this.load.image('hotelDesk', 'assets/lobbydesk.png');
+    this.load.image('leftWall', 'assets/lobbyleftwall.png');
     this.load.tilemapTiledJSON('lobbyTM', 'assets/Lobby tilemap.tmj');
   }
 
@@ -59,15 +61,19 @@ export class GameScene extends Phaser.Scene {
       layer.y -= 3000;
     }
     this.navMesh = this.navMeshPlugin.buildMeshFromTiled("navmeshkey", navMeshLayer);
-    console.log('objects b', navMeshLayer);
-    console.log(this.navMesh);
+    // console.log('objects b', navMeshLayer);
+    // console.log(this.navMesh);
  
-    this.add.image(400, 300, 'hotelLobby');
+    let background = this.add.image(400, 300, 'hotelLobby');
+    background.setDepth(-1);
     let desk = this.add.image(400, 300, 'hotelDesk');
-    desk.setDepth(10);
+    desk.setDepth(34);
+    let leftWall = this.add.image(400, 300, 'leftWall');
+    leftWall.setDepth(36);
     this.player = this.physics.add.sprite(400, 340, 'mainChar');
     this.player.setOrigin(.5, 1);
     this.player.setScale(this.playersScaler(this.player.y));
+    this.adjustCharacterDepth();
     // this.navMesh.enableDebug(null);
     // console.log('now2');
     // this.navMesh.debugDrawMesh({
@@ -119,7 +125,7 @@ export class GameScene extends Phaser.Scene {
       if (!this.path) {
         return;
       }
-      console.log(this.path);
+      // console.log(this.path);
       this.anims.play('mainRight', this.player);
       this.path.shift();
       // console.log(this.path, { x: this.player.x, y: this.player.y }, { x: this.input.x, y: this.input.y });
@@ -134,15 +140,18 @@ export class GameScene extends Phaser.Scene {
     this.walkEvent = this.time.addEvent(new Phaser.Time.TimerEvent({
       callback: function() {
         if (!this.current && !this.path) {
-          console.log('nothing to do')
+          // console.log('nothing to do')
           return;
         }
 
+        this.adjustCharacterDepth();
+
         if (!this.current && this.path) {
-          console.log('to first point');
+          // console.log('to first point', this.current, this.path);
           this.current = this.path.shift();
+          this.player.flipX = this.current.x < this.player.x;
           this.physics.moveToObject(this.player, this.current, 200);
-          console.log('moving from', this.player.x, this. player.y, 'to', this.current);
+          // console.log('moving from', this.player.x, this. player.y, 'to', this.current);
           this.resize = true;
           return;
         }
@@ -152,9 +161,17 @@ export class GameScene extends Phaser.Scene {
         let close = distance < GameScene.DistanceTolerance;
   
         if (close) {
-          console.log('next point');
-          this.current = this.path.shift();
+          // console.log('next point');
+          let oldCurrent = this.current;
+          // In the chaos of the event system, this.path can be null here.
+          this.current = this.path ? this.path.shift() : null;
+          // console.log(this.navMesh.isPointInMesh(this.player));
           if (!this.current) {
+            // If we stop outside of the navMesh, we can't move out again.
+            if (!this.navMesh.isPointInMesh(this.player)) {
+              this.current = oldCurrent;
+              return;
+            }
             this.time.removeEvent(this.walkEvent);
             this.current = null;
             this.resize = false;
@@ -163,9 +180,13 @@ export class GameScene extends Phaser.Scene {
             return;
           }
           this.physics.moveToObject(this.player, this.current, 200);
-          console.log('moving from', this.player.x, this. player.y, 'to', this.current);
-          this.player.flipX = this.target.x < this.player.x;
+          this.player.flipX = this.current.x < this.player.x;
+          //   s  console.log('moving from', this.player.x, this. player.y, 'to', this.current);
         }
-      }, loop: true, delay: 100, callbackScope: this }))
+      }, loop: true, delay: 50, callbackScope: this }))
+  }
+
+  adjustCharacterDepth() {
+    this.player.setDepth(Math.round(this.player.y / 10));
   }
 }
