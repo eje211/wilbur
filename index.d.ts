@@ -1,6 +1,9 @@
-import "phaser";
+import { PlayerCharacter } from "./src/playercharacter";
 
-declare module NavMashPluginMod {
+declare module 'phaser-navmesh-types' {
+  import "phaser";
+  import "phaser-navmesh";
+
   export class PhaserNavMeshPlugin {
     constructor(scene: Phaser.Scene,
       pluginManager: Phaser.Plugins.PluginManager,
@@ -68,7 +71,7 @@ declare module NavMashPluginMod {
     private destroy(): void;
     findClosestMeshPoint(point: Point, maxAllowableDist?: number): { distance: number; point: null | Point; polygon: null | PolyPoints };
     findPath(startPoint: Point, endPoint: Point): null | Point[];
-    getPolygons(): Point[]; s
+    getPolygons(): Point[];
     private getSegmentOverlap(line1: any, line2: any): null | any[];
     isPointInMesh(point: Point): boolean;
     private projectPointToPolygon(point: any, navPoly: PolyPoints): { distance: number; point: null | Point };

@@ -1,4 +1,12 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"Lobby tilemap.tmj"
+        }
+    },
  "height":60,
  "infinite":false,
  "layers":[
@@ -6,8 +14,6 @@
          "id":2,
          "image":"hotellobby.png",
          "name":"Hotel background",
-         "offsetx":4000,
-         "offsety":3000,
          "opacity":1,
          "type":"imagelayer",
          "visible":true,
@@ -17,7 +23,7 @@
         {
          "draworder":"topdown",
          "id":4,
-         "name":"navmesh2",
+         "name":"navmesh",
          "objects":[
                 {
                  "height":30,
@@ -81,7 +87,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":104,
+                 "width":106,
                  "x":4644,
                  "y":3252
                 }, 
@@ -163,7 +169,7 @@
                  "y":3464
                 }, 
                 {
-                 "height":66,
+                 "height":50,
                  "id":49,
                  "name":"",
                  "rotation":0,
@@ -171,10 +177,10 @@
                  "visible":true,
                  "width":10,
                  "x":4252,
-                 "y":3484
+                 "y":3500
                 }, 
                 {
-                 "height":44,
+                 "height":30,
                  "id":50,
                  "name":"",
                  "rotation":0,
@@ -182,10 +188,10 @@
                  "visible":true,
                  "width":10,
                  "x":4242,
-                 "y":3506
+                 "y":3520
                 }, 
                 {
-                 "height":34,
+                 "height":30,
                  "id":53,
                  "name":"",
                  "rotation":0,
@@ -193,10 +199,10 @@
                  "visible":true,
                  "width":202,
                  "x":4040,
-                 "y":3516
+                 "y":3520
                 }, 
                 {
-                 "height":32,
+                 "height":20,
                  "id":54,
                  "name":"",
                  "rotation":0,
@@ -204,7 +210,7 @@
                  "visible":true,
                  "width":10,
                  "x":4030,
-                 "y":3518
+                 "y":3530
                 }, 
                 {
                  "height":10,
@@ -218,7 +224,7 @@
                  "y":3540
                 }, 
                 {
-                 "height":202,
+                 "height":206,
                  "id":59,
                  "name":"",
                  "rotation":0,
@@ -503,6 +509,8 @@
                  "x":4634,
                  "y":3390
                 }],
+         "offsetx":-4000,
+         "offsety":-3000,
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -511,39 +519,154 @@
         }, 
         {
          "draworder":"topdown",
-         "id":5,
-         "name":"navmesh",
+         "id":6,
+         "name":"top",
          "objects":[
                 {
-                 "height":510,
-                 "id":96,
+                 "height":0,
+                 "id":111,
                  "name":"",
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":580,
-                 "x":4150,
-                 "y":3010
+                 "width":112.813398325209,
+                 "x":4230,
+                 "y":3280
                 }, 
                 {
-                 "height":42,
-                 "id":98,
+                 "height":0,
+                 "id":112,
                  "name":"",
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":42,
-                 "x":4070,
-                 "y":3102
+                 "width":64.996875390576,
+                 "x":4326,
+                 "y":3325.3118360205
+                }, 
+                {
+                 "height":0,
+                 "id":114,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":70,
+                 "x":4390,
+                 "y":3280
+                }, 
+                {
+                 "height":0,
+                 "id":115,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":62,
+                 "x":4460,
+                 "y":3326
+                }, 
+                {
+                 "height":0,
+                 "id":117,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":70,
+                 "x":4522,
+                 "y":3280
+                }, 
+                {
+                 "height":0,
+                 "id":118,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":52,
+                 "x":4592,
+                 "y":3326
+                }, 
+                {
+                 "height":0,
+                 "id":119,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":106,
+                 "x":4644,
+                 "y":3252
                 }],
+         "offsetx":-4000,
+         "offsety":-3000,
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"bottom",
+         "objects":[
+                {
+                 "height":0,
+                 "id":120,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":160,
+                 "x":4350,
+                 "y":3580
+                }, 
+                {
+                 "height":0,
+                 "id":121,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":330,
+                 "x":4020,
+                 "y":3550
+                }, 
+                {
+                 "height":0,
+                 "id":122,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":248,
+                 "x":4510,
+                 "y":3550
+                }],
+         "offsetx":-4000,
+         "offsety":-3000,
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":8,
+         "layers":[],
+         "name":"Group 1",
+         "offsetx":-4000,
+         "offsety":-3000,
+         "opacity":1,
+         "type":"group",
+         "visible":true,
          "x":0,
          "y":0
         }],
- "nextlayerid":6,
- "nextobjectid":111,
+ "nextlayerid":9,
+ "nextobjectid":123,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.0",

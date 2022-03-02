@@ -1,7 +1,6 @@
 import "phaser";
 
 import { PhaserNavMeshPlugin } from "phaser-navmesh";
-
 import { GameScene } from "./gamescene";
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -12,7 +11,7 @@ const config: Phaser.Types.Core.GameConfig = {
   plugins: {
     scene: [
       {
-        key: "PhaserNavMeshPlugin", // Key to store the plugin class under in cache
+        key: "PhaserNavMeshPlugin",
         plugin: PhaserNavMeshPlugin, // Class that constructs plugins
         mapping: "navMeshPlugin", // Property mapping to use for the scene, e.g. this.navMeshPlugin
         start: true
@@ -37,7 +36,6 @@ export class WilburGame extends Phaser.Game {
     super(config);
     this.gameScene = new GameScene();
     // this.events.on('update', function() {console.log('hello;')}, this);
-    this.scene.start("GameScene");
   }
 }
 

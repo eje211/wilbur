@@ -1,41 +1,32 @@
 import "phaser";
-import { Scene } from "phaser";
-
+import { PlayerCharacter } from "./playercharacter";
+import { ExtendedGameScene } from "./extendedgamescene";
 import { PhaserNavMeshPlugin } from "phaser-navmesh";
-import { NavMashPluginMod } from "..";
+import DialogBox from "./dialogbox";
+import { Frame, TextSprite } from "phaser-ui-tools";
+import { Game } from "phaser";
 
 type Point = {
     x: number,
     y: number
 }
 
-export class GameScene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene implements ExtendedGameScene {
 
-  player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   target: Point = { x: 0, y: 0 };
-  resize: boolean = false;
-  navMeshPlugin: NavMashPluginMod.PhaserNavMeshPlugin;
   static readonly DistanceTolerance = 15;
-  tileMap: NavMashPluginMod.PhaserNavMesh;
-  current: NavMashPluginMod.Point;
-  navMesh: NavMashPluginMod.PhaserNavMesh;
-  walkEvent: Phaser.Time.TimerEvent;
-  path: NavMashPluginMod.Point[];
+  tileMap: Phaser.Tilemaps.Tilemap;
+  player: PlayerCharacter;
+  creates: [any, Function][];
+  updates: [any, Function][];
+  navMeshPlugin: PhaserNavMeshPlugin;
 
   constructor() {
     super({
-      key: "GameScene",
-      plugins: {
-        scene: [
-          {
-            key: "PhaserNavMeshPluginB", // Key to store the plugin class under in cache
-            plugin: PhaserNavMeshPlugin, // Class that constructs plugins
-            mapping: "navMeshPlugin", // Property mapping to use for the scene, e.g. this navMeshPlugin
-            start: true
-          }
-        ]
-      }
+      key: "GameScene"
     });
+    this.creates = [];
+    this.updates = [];
   }
 
   init(/* params */): void {
@@ -47,33 +38,39 @@ export class GameScene extends Phaser.Scene {
     this.load.image('hotelLobby', 'assets/hotellobby.png');
     this.load.image('hotelDesk', 'assets/lobbydesk.png');
     this.load.image('leftWall', 'assets/lobbyleftwall.png');
+    this.load.audio('footstep', 'assets/footstep.mp3');
     this.load.tilemapTiledJSON('lobbyTM', 'assets/Lobby tilemap.tmj');
   }
 
   create(): void {
-    let navMeshTiles = this.make.tilemap({key: 'lobbyTM',
-      tileWidth: 10, tileHeight: 10, height: 60, width: 80});
-    let navMeshLayer = navMeshTiles.getObjectLayer('navmesh2');
-    for (let layer of navMeshLayer.objects) {
-      layer.x /= 1;
-      layer.y /= 1;
-      layer.x -= 4000;
-      layer.y -= 3000;
-    }
-    this.navMesh = this.navMeshPlugin.buildMeshFromTiled("navmeshkey", navMeshLayer);
     // console.log('objects b', navMeshLayer);
     // console.log(this.navMesh);
+
+    this.input.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, function (pointer: any, gameObjects: Phaser.GameObjects.GameObject[]) {
+      for (let gameObject of gameObjects) {
+        gameObject.emit('clicked', gameObject);
+      }
+    }, this);
  
     let background = this.add.image(400, 300, 'hotelLobby');
-    background.setDepth(-1);
+    background.setDepth(0);
+    background.setActive(true);
+    background.setInteractive({
+      useHandCursor: false
+    });
+    background.on('clicked', this.clickAction, this);
     let desk = this.add.image(400, 300, 'hotelDesk');
     desk.setDepth(34);
     let leftWall = this.add.image(400, 300, 'leftWall');
     leftWall.setDepth(36);
-    this.player = this.physics.add.sprite(400, 340, 'mainChar');
-    this.player.setOrigin(.5, 1);
-    this.player.setScale(this.playersScaler(this.player.y));
-    this.adjustCharacterDepth();
+    this.player = new PlayerCharacter(this, 400, 320, 'mainChar');
+    this.add.existing(this.player);
+    this.physics.add.existing(this.player);
+    let frame = new Frame(this, 150, 50, 'black', true);
+    let dialog = new DialogBox(this, 'This is more than just example Text; this is serious.',
+      200, 200, 250);
+    this.add.existing(dialog);
+    // this.sys
     // this.navMesh.enableDebug(null);
     // console.log('now2');
     // this.navMesh.debugDrawMesh({
@@ -96,97 +93,28 @@ export class GameScene extends Phaser.Scene {
       frameRate: 20
     });
 
-    this.anims.play('mainPause', this.player);
-    this.playersScaler(this.player.y);
+    for (let [origin, create] of this.creates) {
+      create.call(origin, this);
+    }
+  }
 
-    this.buildClickAction();
+  clickAction(): void {
+    let character = this.player;
+    character.path = character.navMesh
+      .findPath({ x: character.x, y: character.y },
+        { x: character.scene.input.x, y: character.scene.input.y });
+    if (!character.path) {
+      return;
+    }
+    character.path = character.path.reverse();
+    character.anims.play('mainRight');
+    character.path.pop();
+    character.walk();
   }
 
   update(time: number, delta: number): void {
-      
-      if (this.resize) {
-        this.player.setScale(this.playersScaler(this.player.y));
+      for (let [origin, update] of this.updates) {
+        update.call(origin, time, delta);
       }
-  }
-
-  playersScaler(yCoordinate: number): number {
-    return (15 + (
-        Math.log(1 / (900 - yCoordinate))
-          / Math.log(1.77)))
-        / 2.5
-  }
-
-  buildClickAction(): void {
-    let scene = this;
-    this.input.on('pointerdown', function (pointer) {
-      this.path = scene.navMesh
-        .findPath({ x: this.player.x, y: this.player.y },
-          { x: this.input.x, y: this.input.y });
-      if (!this.path) {
-        return;
-      }
-      // console.log(this.path);
-      this.anims.play('mainRight', this.player);
-      this.path.shift();
-      // console.log(this.path, { x: this.player.x, y: this.player.y }, { x: this.input.x, y: this.input.y });
-      this.walk();
-    }, this);
-  }
-
-  walk() {
-    if (this.walkEvent) {
-      this.time.removeEvent(this.walkEvent);
-    }
-    this.walkEvent = this.time.addEvent(new Phaser.Time.TimerEvent({
-      callback: function() {
-        if (!this.current && !this.path) {
-          // console.log('nothing to do')
-          return;
-        }
-
-        this.adjustCharacterDepth();
-
-        if (!this.current && this.path) {
-          // console.log('to first point', this.current, this.path);
-          this.current = this.path.shift();
-          this.player.flipX = this.current.x < this.player.x;
-          this.physics.moveToObject(this.player, this.current, 200);
-          // console.log('moving from', this.player.x, this. player.y, 'to', this.current);
-          this.resize = true;
-          return;
-        }
-
-        let distance = Phaser.Math.Distance
-          .Between(this.player.x, this.player.y, this.current.x, this.current.y);
-        let close = distance < GameScene.DistanceTolerance;
-  
-        if (close) {
-          // console.log('next point');
-          let oldCurrent = this.current;
-          // In the chaos of the event system, this.path can be null here.
-          this.current = this.path ? this.path.shift() : null;
-          // console.log(this.navMesh.isPointInMesh(this.player));
-          if (!this.current) {
-            // If we stop outside of the navMesh, we can't move out again.
-            if (!this.navMesh.isPointInMesh(this.player)) {
-              this.current = oldCurrent;
-              return;
-            }
-            this.time.removeEvent(this.walkEvent);
-            this.current = null;
-            this.resize = false;
-            this.anims.play('mainPause', this.player);
-            this.player.setVelocity(0);
-            return;
-          }
-          this.physics.moveToObject(this.player, this.current, 200);
-          this.player.flipX = this.current.x < this.player.x;
-          //   s  console.log('moving from', this.player.x, this. player.y, 'to', this.current);
-        }
-      }, loop: true, delay: 50, callbackScope: this }))
-  }
-
-  adjustCharacterDepth() {
-    this.player.setDepth(Math.round(this.player.y / 10));
   }
 }
