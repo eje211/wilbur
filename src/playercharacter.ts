@@ -7,6 +7,10 @@ type DynamicPoints = {
   [key: string]: boolean;
 }
 
+type LayerContent = {
+  [key: string]: Phaser.Tilemaps.ObjectLayer
+}
+
 export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, x: number, y: number,
       texture: string | Phaser.Textures.Texture, frame?: string | number) {
@@ -31,22 +35,23 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
   step: Phaser.Sound.BaseSound;
   dynamic: DynamicPoints = {};
   navMeshLayer: Phaser.Tilemaps.ObjectLayer;
-  topLayer: Phaser.Tilemaps.ObjectLayer;
-  bottomLayer: Phaser.Tilemaps.ObjectLayer;
-  readonly EdgeProximity = 6;
-  readonly ScreenMidpoint = this.scene.game.canvas.height / 3 * 2;
+  edgeLayers: LayerContent = {};
+  readonly EdgeProximity = { x: 30, y: 10 };
+  readonly ScreenMidpoint = {
+    x: this.scene.game.canvas.width / 2,
+    y: this.scene.game.canvas.height / 3 * 2};
+  private readonly Directions = ["top", "right", "bottom", "left"];
 
   create(scene: Phaser.Scene): void {
     PlayerCharacter.instance = this;
     let navMeshTiles = scene.make.tilemap({key: 'lobbyTM',
       tileWidth: 10, tileHeight: 10, height: 60, width: 80});
-      this.navMeshLayer = navMeshTiles.getObjectLayer('navmesh');
-      this.topLayer = navMeshTiles.getObjectLayer('top');
-      this.bottomLayer = navMeshTiles.getObjectLayer('bottom');
+    this.navMeshLayer = navMeshTiles.getObjectLayer('navmesh');
+    for (const direction of this.Directions) {
+      this.edgeLayers[direction] = navMeshTiles.getObjectLayer(direction);
+    }
     this.setOrigin(.5, 1);
-
     this.step = this.scene.sound.add('footstep');
-
     this.setScale(this.playersScaler(this.y));
     this.adjustCharacterDepth();
     this.navMesh = this.scene.navMeshPlugin.buildMeshFromTiled("navmeshkey", this.navMeshLayer);
@@ -189,17 +194,26 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
    * away frome the edge.
    */
   checkEdge(): boolean {
-    let y = this.scene.input.y;
-    let isTop = (y < this.ScreenMidpoint);
-    let distance = this.y - y;
-    distance = isTop ? distance : -distance;
-    if (distance <= 0 || Math.abs(distance) > this.EdgeProximity) {
+    let location = {x: this.scene.input.x, y: this.scene.input.y};
+    let orientation = {top : location.y < this.ScreenMidpoint.y, left: location.x < this.ScreenMidpoint.x};
+    let distance = {x: this.x - location.x, y: this.y - location.y};
+    distance.x = orientation.left ? distance.x : -distance.x;
+    distance.y = orientation.top ? distance.y : -distance.y;
+    if ( distance.x <= 0 || Math.abs(distance.x) > this.EdgeProximity.x ||
+        distance.y <= 0 || Math.abs(distance.y) > this.EdgeProximity.y) {
       return false;
     }
-    let layer = isTop ? this.topLayer : this.bottomLayer;
-    for (const obj of layer.objects) {
-      if (Math.abs(obj.y - y) <= this.EdgeProximity) {
-        return true;
+    let layers: [Phaser.Tilemaps.ObjectLayer, string][] = [];
+    layers.push([orientation.left ?  this.edgeLayers.left : this.edgeLayers.right, 'x']);
+    layers.push([orientation.top ?  this.edgeLayers.top : this.edgeLayers.bottom, 'y']);
+    for (const layerPair of layers) {
+      let [layer, direction] = layerPair;
+      for (const obj of layer.objects) {
+        let gap = Math.abs(obj[direction as keyof typeof obj] -
+          location[direction as keyof typeof location]);
+        if (gap <= this.EdgeProximity[direction as keyof typeof this.EdgeProximity]) {
+          return true;
+        }
       }
     }
     return false;
