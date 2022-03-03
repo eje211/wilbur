@@ -68,17 +68,8 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
     this.physics.add.existing(this.player);
     let frame = new Frame(this, 150, 50, 'black', true);
     let dialog = new DialogBox(this, 'This is more than just example Text; this is serious.',
-      200, 200, 250);
+      200, 200, this.sayHello, 250);
     this.add.existing(dialog);
-    // this.sys
-    // this.navMesh.enableDebug(null);
-    // console.log('now2');
-    // this.navMesh.debugDrawMesh({
-    //   drawCentroid: false,
-    //   drawBounds: false,
-    //   drawNeighbors: false,
-    //   drawPortals: false
-    // });
 
     this.anims.create({
       key: 'mainRight',
@@ -96,6 +87,10 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
     for (let [origin, create] of this.creates) {
       create.call(origin, this);
     }
+  }
+
+  sayHello() {
+    console.log("Hello");
   }
 
   clickAction(): void {

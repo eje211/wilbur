@@ -1,11 +1,13 @@
 import 'phaser';
 
 export default class DialogBox extends Phaser.GameObjects.Group {
-  constructor(scene: Phaser.Scene, text: string, x: number, y: number, width?: number) {
+  constructor(scene: Phaser.Scene, text: string, x: number, y: number, 
+      callback: Function, width?: number) {
     super(scene)
     this.text = text;
     this.scene = scene;
     this.width = width || 200;
+    this.callback = callback || function() {};
     this.populate();
     this.setX(x);
     this.setY(y)
@@ -20,6 +22,7 @@ export default class DialogBox extends Phaser.GameObjects.Group {
   protected readonly margin = [8, 12, 8, 12];
   protected readonly backgroundColor = 0xdddddd;
   protected readonly textColor = 'black';
+  protected callback: Function;
 
   private populate(): void {
     this.setOrigin(0.5);
@@ -55,6 +58,7 @@ export default class DialogBox extends Phaser.GameObjects.Group {
       context.modal.destroy();
       context.rectangle.destroy();
       context.textBox.destroy();
+      context.callback();
       return false;
     });
     let area = {};
