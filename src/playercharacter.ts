@@ -1,5 +1,4 @@
 import "phaser";
-import { ExtendedGameScene  } from "./extendedgamescene";
 import { GameScene } from "./gamescene";
 import { PhaserNavMesh, Point } from "phaser-navmesh";
 
@@ -36,7 +35,7 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
   dynamic: DynamicPoints = {};
   navMeshLayer: Phaser.Tilemaps.ObjectLayer;
   edgeLayers: LayerContent = {};
-  readonly EdgeProximity = { x: 30, y: 10 };
+  readonly EdgeProximity = { x: 20, y: 10 };
   readonly ScreenMidpoint = {
     x: this.scene.game.canvas.width / 2,
     y: this.scene.game.canvas.height / 3 * 2};
@@ -199,15 +198,16 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
     let distance = {x: this.x - location.x, y: this.y - location.y};
     distance.x = orientation.left ? distance.x : -distance.x;
     distance.y = orientation.top ? distance.y : -distance.y;
-    if ( distance.x <= 0 || Math.abs(distance.x) > this.EdgeProximity.x ||
-        distance.y <= 0 || Math.abs(distance.y) > this.EdgeProximity.y) {
-      return false;
-    }
+    let stop = {x: Math.abs(distance.x) > this.EdgeProximity.x,
+        y: Math.abs(distance.y) > this.EdgeProximity.y}
     let layers: [Phaser.Tilemaps.ObjectLayer, string][] = [];
     layers.push([orientation.left ?  this.edgeLayers.left : this.edgeLayers.right, 'x']);
     layers.push([orientation.top ?  this.edgeLayers.top : this.edgeLayers.bottom, 'y']);
     for (const layerPair of layers) {
       let [layer, direction] = layerPair;
+      if (stop[direction as keyof typeof stop]) {
+        continue;
+      }
       for (const obj of layer.objects) {
         let gap = Math.abs(obj[direction as keyof typeof obj] -
           location[direction as keyof typeof location]);
