@@ -40,6 +40,10 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
     x: this.scene.game.canvas.width / 2,
     y: this.scene.game.canvas.height / 3 * 2};
   private readonly Directions = ["top", "right", "bottom", "left"];
+  private readonly stepSoundConfig: Phaser.Types.Sound.SoundConfig = {
+    loop: true,
+    volume: .2
+  }
 
   create(scene: Phaser.Scene): void {
     PlayerCharacter.instance = this;
@@ -58,21 +62,12 @@ export class PlayerCharacter extends Phaser.Physics.Arcade.Sprite {
     this.playersScaler(this.y);
   }
 
-  // TODO: Prevent walking if player character is close to a top or bottom edge
-  // of the tilemap and is tasked to walk towards the edge.
-  // If close to an edge (x == x of a tile or y == of a tile) and distance too short,
-  // abort.
   walk() {
-    let near = this.checkEdge();
-    if (near) {
+    if (this.checkEdge()) {
       this.stopWalking();
       return;
     }
-    let config: Phaser.Types.Sound.SoundConfig = {
-      loop: true,
-      volume: .2
-    };
-    this.step.play(config);
+    this.step.play(this.stepSoundConfig);
     this.scene.time.removeEvent(this.walkEvent);
     this.walkEvent = this.scene.time.addEvent(new Phaser.Time.TimerEvent({
       callback: function() {

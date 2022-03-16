@@ -5,6 +5,8 @@ import { PhaserNavMeshPlugin } from "phaser-navmesh";
 import DialogBox from "./dialogbox";
 import { Frame, TextSprite } from "phaser-ui-tools";
 import { Game } from "phaser";
+import InkClass from './ink';
+import GameItem from './gameitem';
 
 type Point = {
     x: number,
@@ -20,6 +22,8 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
   creates: [any, Function][];
   updates: [any, Function][];
   navMeshPlugin: PhaserNavMeshPlugin;
+  ink: InkClass;
+  
 
   constructor() {
     super({
@@ -27,6 +31,7 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
     });
     this.creates = [];
     this.updates = [];
+    this.ink = new InkClass();
   }
 
   init(/* params */): void {
@@ -40,6 +45,7 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
     this.load.image('leftWall', 'assets/lobbyleftwall.png');
     this.load.audio('footstep', 'assets/footstep.mp3');
     this.load.tilemapTiledJSON('lobbyTM', 'assets/Lobby tilemap.tmj');
+    this.load.image('redBook', 'assets/book_red.png');
   }
 
   create(): void {
@@ -70,6 +76,9 @@ export class GameScene extends Phaser.Scene implements ExtendedGameScene {
     let dialog = new DialogBox(this, 'This is more than just example Text; this is serious.',
       200, 200, this.sayHello, 250);
     this.add.existing(dialog);
+
+    let book = new GameItem(this, 450, 350, 'redBook', 'A red book. What could it contain?');
+    this.add.existing(book);
 
     this.anims.create({
       key: 'mainRight',

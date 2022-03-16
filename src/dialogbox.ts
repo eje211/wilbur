@@ -49,9 +49,8 @@ export default class DialogBox extends Phaser.GameObjects.Group {
     this.rectangle.setDepth(1001);
     this.rectangle.setOrigin(.5);
     let { width, height } = this.scene.sys.game.canvas;
-    this.modal = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 200, 200, 0x000000, .33);
-    this.modal.setOrigin(1, 1);
-    this.modal.setSize(width, height);
+    this.modal = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, width, height, 0x000000, .33);
+    this.modal.setOrigin(0, 0); 
     this.modal.setDepth(1000);
     let context = this;
     this.modal.on('pointerup', function(event: Event) {
@@ -67,7 +66,7 @@ export default class DialogBox extends Phaser.GameObjects.Group {
     this.modal.setActive(true);
     this.add(this.rectangle, true);
     this.add(this.textBox, true);
-    this.add(this.modal, true);
+    this.scene.add.existing(this.modal);
 
   }
 }
